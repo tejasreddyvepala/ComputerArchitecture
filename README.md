@@ -1,17 +1,15 @@
-# Tests-on-Simple-Scalar
+# Tests using Simple Scalar
 
-In the words of the creators, *"The SimpleScalar tool set is a system software infrastructure used to build modeling applications for program performance analysis, detailed microarchitectural modeling, and hardware-software co-verification"*. An architectural simulator reproduces the behaviour of a computing device. With SimpleScalar, one can simulate programs on various configurations of modern processors, even Out-of-Order (OoO) issue processors, that support non-blocking caches, speculative execution, and state-of-the-art branch prediction. Visit [SimpleScalar](http://www.simplescalar.com/)'s 'Downloads' section to download the tool or the 'Documentation' section to learn about the internals and execution steps.
+An architectural simulator mimics how a computer device would behave. Programs on a variety of contemporary processor architectures, including Out-of-Order (OoO) issue processors, that allow non-blocking caches, speculative execution, and cutting-edge branch prediction can be simulated with SimpleScalar. 
 
 ## Setup
-
-Download the contents of this repository in the same directory as the SimpleScalar toolset source files (obtained from the 'Downloads' section), maintaining the hierarchy. Follow the instructions in the `README` provided by SimpleScalar to build and install. In this exercise, I'll built the toolset on Linux with PISA (Portable ISA) target. To replicate the same, run the below commands in the directory where SimpleScalar is downloaded:
 
 ``` 
 make config-pisa
 make
 ```
 
-To verfify the build, run any of the various simulator models provided by SimpleScalar (sim-fast, sim-safe, sim-outorder, etc. - more information about each of these in the official documentation) on any of the tests corresponding to the target built:
+Run any of the SimpleScalar simulator models on any test that corresponds to the built target to validate the build:
 
 ```
 ./sim-outorder tests-pisa/bin.little/test-math
@@ -19,30 +17,30 @@ To verfify the build, run any of the various simulator models provided by Simple
 
 This should publish the output of the test and various simulation statistics. 
 
-To change the configuration of the processor (cache latencies, cache configuration, number of functional units, branch predictor, etc.), run the below command and supply the parameters to be modified appropiately through command line options or by providing a config file.
+The following command is used to adjust the processor's settings (cache latencies, cache configuration, number of functional units, branch predictor, etc.). The parameters to be changed can be supplied through command line options or a configuration file.
 
 ```
 ./sim-outorder -h
 ```
 
-To be able to execute our own binaries on the simulators, one has to employ a cross-compiler to generate executables for the PISA/Alpha targets. Please read the official documentation on how to setup `gcc-2.6.3` along with the cross-compiler and follow [this](https://github.com/sdenel/How-to-install-SimpleScalar-on-Ubuntu) tutorial by *@sdenel* to solve numerous conflicts during the build process. Once the cross-compiler is setup successfully, one can cross-compile to executables on appropiate targets (PISA/Alpha). Example:
+Using a cross-compiler to create executables for the PISA/Alpha targets is necessary in order to run our own binaries on the simulators. One can cross-compile to executables on appropriate targets (PISA/Alpha) once the cross-compiler has been set up properly. 
+
+Example:
 
 ```
 bin/sslittle-na-sstrix-gcc -g -O -o mytests/bpred_corr_branch mytests/bpred_corr_branch.c
 ```
 
-For more information, see the attached [Makefile](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/blob/master/Makefile).
-
 ## How to run tests
 
-Once the project is built with my included tests (by executing my Makefile), run the `run_analysis.sh` bash script to automate the task of running my designed tests on the `sim-outorder` simulator with PISA target.
+Run the `run_analysis.sh` bash script to automate the task of running my intended tests on the `sim-outorder} simulator with PISA target after the project has been built with our included tests (by executing my Makefile).
 
 ```
 Usage: ./run_analysis.sh [ANALYSIS_TYPE] [TEST_FILE_PATH] [DEBUG]
 ```
-- `ANALYSIS_TYPE` can be 'b' for running branch predictors' test or 'c' for executing analysis on cache-oblivious algorithms.
+- `ANALYSIS_TYPE` can be either 'b' for testing branch predictors or 'c' for doing analysis on algorithms that ignore caches.
 - `TEST_FILE_PATH` takes in the path to the executable to run the `sim-outorder` simulator on. Irrelevant when `ANALYSIS_TYPE` == 'c'.
-- `DEBUG` only when '1' prints useful stats and messages about the running tests.
+- `DEBUG` alone after '1' produces helpful statistics and messages regarding the active tests.
 
 **Example**:
 ```
@@ -78,17 +76,16 @@ Extracting vital branch prediction results from the simulator runs...
 
 #### Branch Predictors 
 
-A hypothesis I wanted to prove was how dynamic global predictors should outperform dynamic local predictors on [correlated branch conditionals with a *random* pattern](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/blob/master/mytests/bpred_corr_branch.c); randomness was embedded because only then one can point out the exploitation, by the global predictor, of the auxiliary information about other branch conditionals that global branch history possesses, instead of simply "learning" the pattern itself. This global view lacks in the local predictors ergo their failure in comparison with global predictors. 
+A hypothesis we wanted to prove was how dynamic global predictors should outperform dynamic local predictors. Randomness was embedded because only then one can point out the exploitation, by the global predictor, of the auxiliary information about other branch conditionals that global branch history possesses, instead of simply "learning" the pattern itself. This global view lacks in the local predictors ergo their failure in comparison with global predictors. 
 
-For this experiment, I configured various branch predictors ([`myconfig/bpred_*`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/tree/master/myconfig)) viz. two-level adaptive (and its numerous flavours: GAg, PAg, PAp, gshare), bimodal, hybrid between two-level adaptive and bimodal (named 'comb'), taken, not-taken, etc. Each of these branch predictors were employed sequentially while executing `mytests/bpred_corr_branch.c` which contains the source code for 'executing correlated branch conditionals with random pattern'. Further experiments include modifying parameters of the branch predictor such as history length, table size, etc.  
+For this experiment, we configured various branch predictors . two-level adaptive (and its numerous flavours: GAg, PAg, PAp, gshare), bimodal, hybrid between two-level adaptive and bimodal (named 'comb'), taken, not-taken, etc. Each of these branch predictors were employed sequentially while executing `mytests/bpred_corr_branch.c` which contains the source code for 'executing correlated branch conditionals with random pattern'. Further experiments include modifying parameters of the branch predictor such as history length, table size, etc.  
 
 #### Caches
 
-[Cache-oblivious algorithms](https://en.wikipedia.org/wiki/Cache-oblivious_algorithm), which are subtly different from Cache-aware algorithms as Michael Bender explains in his brief technical paper [Cache-Oblivious and Cache-Aware Algorithms](https://www.tau.ac.il/~stoledo/csc04/Bender.pdf), are algorithms written craftily to exploit how caches work and their structure in order to attain superior asymptotic time complexity. As the name suggests, these algorithms are *oblivious* to the memory heirarchy and ergo are anticipated to work flawlessly even on machines with different cache levels, cache line size, etc. than the machine on which such algorithms were tested on. 
+These are subtly different from Cache-aware algorithms as Michael Bender explains in his brief technical paper, are algorithms written craftily to exploit how caches work and their structure in order to attain superior asymptotic time complexity. As the name suggests, these algorithms are oblivious to the memory heirarchy and ergo are anticipated to work flawlessly even on machines with different cache levels, cache line size, etc. than the machine on which such algorithms were tested on. 
 
-Accessing elements of a martrix in [row-major order](https://en.wikipedia.org/wiki/File:Row_and_column_major_order.svg) is one such cache-oblivious algorithm. Simply because how arrays are stored in memory and how caches fetch blocks of sequential localized data from memory during a cache-miss, accessing elements from a matrix in row-major order ([`mytests/caching_row_major.c`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/blob/master/mytests/caching_row_major.c)) looks advantageous than accessing elements in column-major order ([`mytests/caching_col_major.c`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/blob/master/mytests/caching_col_major.c)) because every access results in a cache-miss in the latter case as it fetches the incorrect block in the top-level cache (assuming cache pre-fetchers are absent).
-
-**Configurations**: The L1 data cache is of 16KiB (128 sets, 32B block size, 4 associativity) and the L2 data cache is of 256KiB (1024 sets, 64B block size, 4 associativity). Both level caches have 'LRU' as their block replacement policies.
+**Configurations**: 
+The L1 data cache is of 16KiB (128 sets, 32B block size, 4 associativity) and the L2 data cache is of 256KiB (1024 sets, 64B block size, 4 associativity). Both level caches have 'LRU' as their block replacement policies.
 
 ## Results and observations
 
@@ -158,7 +155,6 @@ Extracting vital branch prediction results from the simulator runs...
 
 One would expect the global predictors such as gshare & GAg to produce better direction-prediction rate than the local predictors (PAp, PAg, etc.). I've been debugging the obscruity behind the results and shall update here soon.
 
-Relevant simulation results can be found under [`results/result_bpred_*`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/tree/master/results). Complete simulation results can be found under [`output-sim/test_bpred_*`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/tree/master/output-sim).
 
 #### Caches
 
@@ -193,9 +189,8 @@ Extracting vital cache stats from the simulator runs...
 
 - `sim_IPC` is a misleading metric here as its more for column-major order than row-major order. I say its misleading because the complete simulation results (`results/result_cache_*`) expresses how `cache_col` runs more total instructions (`sim_total_insn`) than `cache_row` (even though the #load, store & branch instructions are the same) in proportionately lesser time.
 
-- The affects on `sim_elapsed_time` & `sim_IPC` for column-major order w.r.t row-major order can be seen amplified if we decrease the cache hit latencies (`-cache:dl1lat` and `-cache:dl2lat`) and increase the memory access latency (`-mem:lat`) in both the [`myconfig/caching_*.cfg`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/tree/master/myconfig) files. 
+- The affects on `sim_elapsed_time` & `sim_IPC` for column-major order w.r.t row-major order can be seen amplified if we decrease the cache hit latencies (`-cache:dl1lat` and `-cache:dl2lat`) and increase the memory access latency (`-mem:lat`) in both the  files. 
 
-Relevant simulation results can be found under [`results/result_caching_*`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/tree/master/results). Complete simulation results can be found under [`output-sim/test_cache_*`](https://github.com/layman-n-ish/Tests-on-Simple-Scalar/tree/master/output-sim).
 
 ## Future Work
 
