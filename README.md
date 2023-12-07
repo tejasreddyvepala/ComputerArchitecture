@@ -1,4 +1,4 @@
-# Tests using Simple Scalar
+# Tests using Simple Scalar ( Branch predictors and cache )
 
 An architectural simulator mimics how a computer device would behave. Programs on a variety of contemporary processor architectures, including Out-of-Order (OoO) issue processors, that allow non-blocking caches, speculative execution, and cutting-edge branch prediction can be simulated with SimpleScalar. 
 
