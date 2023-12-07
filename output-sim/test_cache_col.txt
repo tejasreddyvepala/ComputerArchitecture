@@ -7,8 +7,6 @@ of SimpleScalar, LLC (info@simplescalar.com).
 
 sim: command line: ./sim-outorder -config myconfig/caching_col.cfg mytests/caching_col_major.o 
 
-sim: simulation started @ Sat May  9 15:08:03 2020, options follow:
-
 sim-outorder: This simulator implements a very detailed out-of-order issue
 superscalar processor with a two-level memory system and speculative
 execution support.  This simulator is a performance simulator, tracking the
